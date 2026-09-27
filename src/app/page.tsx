@@ -9,6 +9,8 @@ import {
 import Link from "next/link";
 import useSWR from "swr";
 import { AddSourceDialog } from "@/app/components/AddSourceDialog";
+import { GlobalSearchDialog } from "@/app/components/GlobalSearchDialog";
+import { StatusStats } from "@/app/components/StatusStats";
 import {
   Card,
   CardContent,
@@ -16,12 +18,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher, sourcesKey } from "@/lib/swr";
 
 interface Source {
   id: number;
   sourceName: string;
+  listingCount: number;
 }
 
 const iconMap: Record<string, React.ElementType> = {
@@ -43,13 +47,16 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-zinc-50 px-4 py-8 dark:bg-black">
       <div className="mx-auto max-w-5xl">
-        <header className="mb-8">
-          <h1 className="text-2xl font-bold tracking-tight dark:text-white">
-            Job Tracker
-          </h1>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
-            Track your job applications from all sources
-          </p>
+        <header className="mb-8 flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight dark:text-white">
+              Job Tracker
+            </h1>
+            <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+              Track your job applications from all sources
+            </p>
+          </div>
+          {!isLoading && !error && <GlobalSearchDialog />}
         </header>
 
         {isLoading ? (
@@ -81,14 +88,24 @@ export default function Home() {
                             {source.sourceName}
                           </CardTitle>
                         </div>
+                        <Badge variant="secondary">
+                          {source.listingCount ?? 0} lamaran
+                        </Badge>
                       </CardHeader>
                       <CardContent>
-                        <CardDescription>Lihat detail →</CardDescription>
+                        <CardDescription>
+                          Total {source.listingCount ?? 0} job listing — Lihat
+                          detail →
+                        </CardDescription>
                       </CardContent>
                     </Card>
                   </Link>
                 );
               })}
+            </section>
+
+            <section className="mt-8 max-w-xl">
+              <StatusStats />
             </section>
 
             <section className="mt-8 flex justify-end">

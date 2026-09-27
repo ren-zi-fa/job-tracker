@@ -21,8 +21,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { toast } from "@/components/ui/toast";
+import { createListingApiSchema } from "@/lib/validation";
 
-const statusOptions = ["Applied", "Interview", "Rejected", "Accepted"];
+import { statusOptions } from "./types";
 
 interface AddListingDialogProps {
   sourceId: number;
@@ -39,35 +41,63 @@ export function AddListingDialog({
   const [company, setCompany] = useState("");
   const [position, setPosition] = useState("");
   const [location, setLocation] = useState("");
-  const [status, setStatus] = useState("Applied");
+  const [status, setStatus] = useState("Pending");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async () => {
-    if (!company.trim() || !position.trim() || !location.trim()) return;
+    const payload = {
+      sourceId,
+      company: company.trim(),
+      position: position.trim(),
+      companyLocation: location.trim(),
+      status,
+      applicationDate: new Date().toISOString(),
+    };
+    const parsed = createListingApiSchema.safeParse(payload);
+    if (!parsed.success) {
+      const errors: Record<string, string> = {};
+      for (const issue of parsed.error.issues) {
+        const key = String(issue.path[0] ?? "form");
+        if (!errors[key]) errors[key] = issue.message;
+      }
+      setFieldErrors(errors);
+      return;
+    }
+    setFieldErrors({});
     setLoading(true);
     try {
       const res = await fetch("/api/listings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceId,
-          company: company.trim(),
-          position: position.trim(),
-          companyLocation: location.trim(),
-          status,
-          applicationDate: new Date().toISOString(),
-        }),
+        body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        setCompany("");
-        setPosition("");
-        setLocation("");
-        setStatus("Applied");
-        setOpen(false);
-        await onCreated?.();
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(
+          data?.error
+            ? `${res.status}: ${data.error}`
+            : `POST failed: ${res.status}`,
+        );
       }
+      setCompany("");
+      setPosition("");
+      setLocation("");
+      setStatus("Applied");
+      setOpen(false);
+      await onCreated?.();
+      toast.add({
+        type: "success",
+        title: "Lamaran ditambahkan",
+        description: `${company.trim()} — ${position.trim()} (${sourceName}).`,
+      });
     } catch (err) {
       console.error("Failed to add listing:", err);
+      toast.add({
+        type: "error",
+        title: "Gagal menambah lamaran",
+        description: err instanceof Error ? err.message : "Coba lagi.",
+      });
     } finally {
       setLoading(false);
     }
@@ -95,6 +125,9 @@ export function AddListingDialog({
                 if (e.key === "Enter") handleSubmit();
               }}
             />
+            {fieldErrors.company && (
+              <p className="text-xs text-destructive">{fieldErrors.company}</p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="listing-position">Position</Label>
@@ -107,6 +140,9 @@ export function AddListingDialog({
                 if (e.key === "Enter") handleSubmit();
               }}
             />
+            {fieldErrors.position && (
+              <p className="text-xs text-destructive">{fieldErrors.position}</p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="listing-location">Location</Label>
@@ -119,12 +155,17 @@ export function AddListingDialog({
                 if (e.key === "Enter") handleSubmit();
               }}
             />
+            {fieldErrors.companyLocation && (
+              <p className="text-xs text-destructive">
+                {fieldErrors.companyLocation}
+              </p>
+            )}
           </div>
           <div className="grid gap-2">
             <Label htmlFor="listing-status">Status</Label>
             <Select
               value={status}
-              onValueChange={(v) => setStatus(v || "Applied")}
+              onValueChange={(v) => setStatus(v || "Pending")}
             >
               <SelectTrigger id="listing-status">
                 <SelectValue />
@@ -139,6 +180,9 @@ export function AddListingDialog({
                 </SelectGroup>
               </SelectContent>
             </Select>
+            {fieldErrors.status && (
+              <p className="text-xs text-destructive">{fieldErrors.status}</p>
+            )}
           </div>
         </div>
         <DialogFooter>

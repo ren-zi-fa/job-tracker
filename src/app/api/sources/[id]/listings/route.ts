@@ -1,4 +1,4 @@
-import { desc, eq } from "drizzle-orm";
+import { count, desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import db from "@/database/db";
 import { jobListingsTable } from "@/database/models/schema";
@@ -24,9 +24,15 @@ export async function GET(
   const hasMore = listings.length > limit;
   const data = hasMore ? listings.slice(0, limit) : listings;
 
+  const [{ total }] = await db
+    .select({ total: count() })
+    .from(jobListingsTable)
+    .where(eq(jobListingsTable.sourceId, parseInt(id)));
+
   return NextResponse.json({
     listings: data,
     hasMore,
     nextPage: page + 1,
+    total,
   });
 }

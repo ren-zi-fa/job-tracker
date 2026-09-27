@@ -1,8 +1,9 @@
 "use client";
 
 import { Briefcase, Calendar, MapPin } from "@phosphor-icons/react";
-import { useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWRInfinite from "swr/infinite";
+import { useSWRConfig } from "swr";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -12,17 +13,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetcher, listingsKey } from "@/lib/swr";
+import { fetcher, listingsCountKey, listingsKey } from "@/lib/swr";
 import { AddListingDialog } from "./AddListingDialog";
+import { EditStatusDialog } from "./EditStatusDialog";
 
-const statusVariant: Record<
-  string,
-  "default" | "secondary" | "destructive" | "outline"
-> = {
-  Applied: "default",
-  Interview: "secondary",
-  Rejected: "destructive",
-  Accepted: "outline",
+const statusClass: Record<string, string> = {
+  Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  Applied: "bg-blue-100 text-blue-800 border-blue-200",
+  Interview: "bg-purple-100 text-purple-800 border-purple-200",
+  Rejected: "bg-red-100 text-red-800 border-red-200",
+  Accepted: "bg-green-100 text-green-800 border-green-200",
 };
 
 interface JobListing {
@@ -39,17 +39,38 @@ interface ListingsPage {
   listings: JobListing[];
   hasMore: boolean;
   nextPage: number;
+  total: number;
 }
 
 const skeletonKeys = ["skel-1", "skel-2", "skel-3"];
 
-function StatusBadge({ status }: { status: string }) {
-  return <Badge variant={statusVariant[status] || "default"}>{status}</Badge>;
+function getTargetIdFromHash(): number | null {
+  if (typeof window === "undefined") return null;
+  const match = window.location.hash.match(/#listing-(\d+)/);
+  return match ? parseInt(match[1] as string, 10) : null;
 }
 
-function JobCard({ listing }: { listing: JobListing }) {
+function StatusBadge({ status }: { status: string }) {
   return (
-    <Card className="hover:shadow-md transition-shadow">
+    <Badge variant="outline" className={statusClass[status] || ""}>
+      {status}
+    </Badge>
+  );
+}
+function JobCard({
+  listing,
+  highlighted,
+  onSaveStatus,
+}: {
+  listing: JobListing;
+  highlighted: boolean;
+  onSaveStatus: (listingId: number, status: string) => Promise<void>;
+}) {
+  return (
+    <div id={`listing-${listing.id}`} className="scroll-mt-24">
+      <Card
+        className={`hover:shadow-md transition-shadow ${highlighted ? "ring-2 ring-primary shadow-md" : ""}`}
+      >
       <CardHeader className="flex flex-row items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <CardTitle className="text-base truncate">
@@ -59,7 +80,10 @@ function JobCard({ listing }: { listing: JobListing }) {
             {listing.position}
           </CardDescription>
         </div>
-        <StatusBadge status={listing.status} />
+        <div className="flex shrink-0 items-center gap-1">
+          <StatusBadge status={listing.status} />
+          <EditStatusDialog listing={listing} onSave={onSaveStatus} />
+        </div>
       </CardHeader>
       <CardContent className="flex flex-wrap gap-3 text-xs text-zinc-500 dark:text-zinc-400">
         <div className="flex items-center gap-1">
@@ -75,7 +99,8 @@ function JobCard({ listing }: { listing: JobListing }) {
           })}
         </div>
       </CardContent>
-    </Card>
+      </Card>
+    </div>
   );
 }
 
@@ -87,6 +112,12 @@ export default function JobListings({
   sourceName: string;
 }) {
   const sentinelRef = useRef<HTMLDivElement | null>(null);
+  const scrolledRef = useRef<number | null>(null);
+  const { mutate: globalMutate } = useSWRConfig();
+  const [targetId, setTargetId] = useState<number | null>(() =>
+    getTargetIdFromHash(),
+  );
+  const [highlightedId, setHighlightedId] = useState<number | null>(null);
 
   const { data, error, size, setSize, isValidating, isLoading, mutate } =
     useSWRInfinite<ListingsPage>((index, previousData) => {
@@ -105,8 +136,78 @@ export default function JobListings({
   }, [data]);
 
   const hasMore = data?.length ? data[data.length - 1].hasMore : true;
+  const total = data?.length ? (data[0]?.total ?? listings.length) : 0;
   const isLoadingMore = isValidating && size > (data?.length ?? 0);
   const showSentinel = !isLoading && !error && listings.length > 0 && hasMore;
+
+  const refreshListingsAndTotal = useCallback(async () => {
+    await mutate();
+    await globalMutate(listingsCountKey(sourceId));
+  }, [mutate, globalMutate, sourceId]);
+
+  const updateListingStatus = useCallback(
+    async (listingId: number, status: string) => {
+      await mutate(
+        (pages) =>
+          pages?.map((page) => ({
+            ...page,
+            listings: page.listings.map((listing) =>
+              listing.id === listingId ? { ...listing, status } : listing,
+            ),
+          })),
+        { revalidate: false },
+      );
+      try {
+        const res = await fetch(`/api/listings/${listingId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status }),
+        });
+        if (!res.ok) throw new Error(`PATCH failed: ${res.status}`);
+      } finally {
+        await refreshListingsAndTotal();
+      }
+    },
+    [mutate, refreshListingsAndTotal],
+  );
+
+  useEffect(() => {
+    const onHashChange = () => {
+      scrolledRef.current = null;
+      setHighlightedId(null);
+      setTargetId(getTargetIdFromHash());
+    };
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+
+  // Muat halaman tambahan sampai kartu target ditemukan (deep-link dari pencarian).
+  useEffect(() => {
+    if (targetId == null || isLoading || error) return;
+    if (listings.some((listing) => listing.id === targetId)) return;
+    if (hasMore && !isValidating) setSize((current) => current + 1);
+  }, [targetId, listings, hasMore, isValidating, isLoading, error, setSize]);
+
+  // Scroll tepat ke kartu perusahaan + highlight sementara.
+  const targetLoaded =
+    targetId != null &&
+    listings.some((listing) => listing.id === targetId);
+  useEffect(() => {
+    if (targetId == null || isLoading || !targetLoaded) return;
+    if (scrolledRef.current === targetId) return;
+    const el = document.getElementById(`listing-${targetId}`);
+    if (!el) return;
+    scrolledRef.current = targetId;
+    const frame = requestAnimationFrame(() => {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      setHighlightedId(targetId);
+    });
+    const clear = setTimeout(() => setHighlightedId(null), 3000);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(clear);
+    };
+  }, [targetId, targetLoaded, isLoading]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -133,7 +234,7 @@ export default function JobListings({
       <AddListingDialog
         sourceId={sourceId}
         sourceName={sourceName}
-        onCreated={() => mutate()}
+        onCreated={() => refreshListingsAndTotal()}
       />
     </div>
   );
@@ -170,7 +271,10 @@ export default function JobListings({
       {dialog}
 
       <h2 className="mb-4 text-xl font-bold dark:text-white">
-        Lamaran — {sourceName}
+        Lamaran — {sourceName}{" "}
+        <span className="text-sm font-normal text-zinc-500 dark:text-zinc-400">
+          ({total} job listing)
+        </span>
       </h2>
 
       {listings.length === 0 ? (
@@ -182,7 +286,12 @@ export default function JobListings({
         <>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {listings.map((listing) => (
-              <JobCard key={listing.id} listing={listing} />
+              <JobCard
+                key={listing.id}
+                listing={listing}
+                highlighted={listing.id === highlightedId}
+                onSaveStatus={updateListingStatus}
+              />
             ))}
           </div>
 

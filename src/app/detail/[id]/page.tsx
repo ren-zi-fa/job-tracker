@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import db from "@/database/db";
 import { sourceTable } from "@/database/models/schema";
 import JobListings from "./components/JobListings";
+import { TotalListingsBadge } from "./components/TotalListingsBadge";
 
 async function getSource(id: string) {
   const sources = await db
@@ -58,6 +59,7 @@ export default async function DetailPage({
               <p className="text-sm text-zinc-500 dark:text-zinc-400">
                 Detail lamaran dan lowongan
               </p>
+              <TotalListingsBadge sourceId={source.id} />
             </div>
           </div>
         </header>

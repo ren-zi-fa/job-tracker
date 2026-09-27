@@ -15,6 +15,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { sourcesKey } from "@/lib/swr";
+import { insertSourceSchema } from "@/lib/validation";
 
 interface Source {
   id: number;
@@ -25,15 +26,21 @@ export function AddSourceDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldError, setFieldError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (!name.trim()) return;
+    const parsed = insertSourceSchema.safeParse({ sourceName: name.trim() });
+    if (!parsed.success) {
+      setFieldError(parsed.error.issues[0]?.message ?? "Input tidak valid");
+      return;
+    }
+    setFieldError(null);
     setLoading(true);
     try {
       const res = await fetch("/api/sources", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sourceName: name.trim() }),
+        body: JSON.stringify({ sourceName: parsed.data.sourceName }),
       });
       if (res.ok) {
         const created: Source = await res.json();
@@ -74,6 +81,9 @@ export function AddSourceDialog() {
                 if (e.key === "Enter") handleSubmit();
               }}
             />
+            {fieldError && (
+              <p className="text-xs text-destructive">{fieldError}</p>
+            )}
           </div>
         </div>
         <DialogFooter>

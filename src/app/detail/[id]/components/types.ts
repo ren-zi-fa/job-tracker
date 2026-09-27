@@ -1,3 +1,5 @@
+import { statusEnum } from "@/lib/validation";
+
 export interface JobListing {
   id: number;
   sourceId: number;
@@ -7,3 +9,5 @@ export interface JobListing {
   status: string;
   applicationDate: string;
 }
+
+export const statusOptions: string[] = statusEnum.options;
