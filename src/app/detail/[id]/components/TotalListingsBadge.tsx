@@ -12,14 +12,14 @@ export function TotalListingsBadge({ sourceId }: { sourceId: number }) {
 
   if (isLoading) {
     return (
-      <Badge variant="secondary" className="mt-2 animate-pulse">
+      <Badge variant="default" className="mt-3 animate-pulse">
         Menghitung job listing…
       </Badge>
     );
   }
 
   return (
-    <Badge variant="secondary" className="mt-2">
+    <Badge variant="default" className="mt-3">
       Total {data?.total ?? 0} job listing
     </Badge>
   );

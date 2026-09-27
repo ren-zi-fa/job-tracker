@@ -1,4 +1,6 @@
+import { ArrowLeft, Building } from "@phosphor-icons/react/dist/ssr";
 import { eq } from "drizzle-orm";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import db from "@/database/db";
 import { sourceTable } from "@/database/models/schema";
@@ -23,44 +25,28 @@ export default async function DetailPage({
   if (!source) return notFound();
 
   return (
-    <main className="min-h-screen bg-zinc-50 px-4 py-8 dark:bg-black">
+    <main className="min-h-screen bg-background px-4 py-10">
       <div className="mx-auto max-w-5xl">
-        <a
+        <Link
           href="/"
-          className="inline-flex items-center gap-1 text-sm text-zinc-500 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+          className="inline-flex items-center gap-1.5 border-2 border-border bg-card px-3 py-1.5 text-xs font-bold uppercase tracking-wide shadow-brutal-sm transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal"
         >
-          ← Kembali ke Beranda
-        </a>
+          <ArrowLeft data-icon="inline-start" weight="bold" />
+          Kembali ke Beranda
+        </Link>
 
-        <header className="mt-4 mb-8">
-          <div className="flex items-center gap-3">
-            <div className="flex size-12 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-label="Building"
-              >
-                <title>Building</title>
-                <path d="M4 22h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v13a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2ZM2 9h20" />
-                <path d="M20 9V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v4" />
-              </svg>
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight dark:text-white">
-                {source.sourceName}
-              </h1>
-              <p className="text-sm text-zinc-500 dark:text-zinc-400">
-                Detail lamaran dan lowongan
-              </p>
-              <TotalListingsBadge sourceId={source.id} />
-            </div>
+        <header className="mt-6 mb-10 flex items-center gap-4 border-b-2 border-border pb-6">
+          <div className="flex size-14 shrink-0 items-center justify-center border-2 border-border bg-primary text-primary-foreground shadow-brutal">
+            <Building weight="bold" className="size-7" />
+          </div>
+          <div>
+            <h1 className="font-heading text-3xl font-black tracking-tight uppercase">
+              {source.sourceName}
+            </h1>
+            <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
+              Detail lamaran dan lowongan
+            </p>
+            <TotalListingsBadge sourceId={source.id} />
           </div>
         </header>
 

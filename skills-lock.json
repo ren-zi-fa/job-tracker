@@ -7,6 +7,12 @@
       "skillPath": "skills/drizzle-orm/SKILL.md",
       "computedHash": "e2cc18721f3a4eb57f5b948d9cf3e33e3f8d5a954687efc5c1dcae297b9e6913"
     },
+    "neobrutalism": {
+      "source": "bergside/awesome-design-skills",
+      "sourceType": "github",
+      "skillPath": "skills/neobrutalism/SKILL.md",
+      "computedHash": "53dd3da4651bc1a9d7a2f826cdbba5ec7738cfb3407728f11929ca27a3355997"
+    },
     "shadcn": {
       "source": "shadcn/ui",
       "sourceType": "github",

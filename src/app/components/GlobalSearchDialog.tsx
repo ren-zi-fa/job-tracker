@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getStatusBadgeClass } from "@/lib/status";
 import { fetcher, searchKey } from "@/lib/swr";
 
 interface SearchDoc {
@@ -33,14 +34,6 @@ interface SearchDoc {
 type EnrichedResult = {
   field: string;
   result: number[];
-};
-
-const statusClass: Record<string, string> = {
-  Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-  Applied: "bg-blue-100 text-blue-800 border-blue-200",
-  Interview: "bg-purple-100 text-purple-800 border-purple-200",
-  Rejected: "bg-red-100 text-red-800 border-red-200",
-  Accepted: "bg-green-100 text-green-800 border-green-200",
 };
 
 export function GlobalSearchDialog() {
@@ -107,7 +100,7 @@ export function GlobalSearchDialog() {
       <DialogTrigger
         render={
           <Button variant="outline">
-            <MagnifyingGlass className="size-4" />
+            <MagnifyingGlass data-icon="inline-start" weight="bold" />
             Cari lamaran…
           </Button>
         }
@@ -129,47 +122,45 @@ export function GlobalSearchDialog() {
         />
 
         {isLoading ? (
-          <div className="space-y-2 py-2">
-            <Skeleton className="h-12" />
-            <Skeleton className="h-12" />
-            <Skeleton className="h-12" />
+          <div className="flex flex-col gap-2 py-2">
+            <Skeleton className="h-14" />
+            <Skeleton className="h-14" />
+            <Skeleton className="h-14" />
           </div>
         ) : results.length === 0 ? (
-          <p className="py-6 text-center text-sm text-zinc-400">
+          <p className="py-6 text-center text-sm text-muted-foreground">
             {deferredQuery.trim()
               ? `Tidak ada hasil untuk "${deferredQuery.trim()}".`
               : "Belum ada lamaran untuk dicari."}
           </p>
         ) : (
           <>
-            <p className="text-xs text-zinc-500 dark:text-zinc-400">
+            <p className="font-mono text-xs tracking-wide text-muted-foreground uppercase">
               {deferredQuery.trim()
                 ? `${results.length} hasil`
                 : `Terbaru — ${results.length} lamaran`}
             </p>
-            <div className="max-h-[45vh] space-y-2 overflow-y-auto pr-1">
+            <div className="flex max-h-[45vh] flex-col gap-2 overflow-y-auto pr-1">
               {results.map((doc) => (
                 <Link
                   key={doc.id}
                   href={`/detail/${doc.sourceId}#listing-${doc.id}`}
                   onClick={() => setOpen(false)}
-                  className="block rounded-md border border-border p-3 transition-colors hover:border-primary hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                  className="block border-2 border-border bg-card p-3 shadow-brutal-sm transition-all hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-brutal"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-semibold">
-                      {doc.company}
-                    </p>
+                    <p className="truncate text-sm font-bold">{doc.company}</p>
                     <div className="flex shrink-0 items-center gap-1">
                       <Badge
                         variant="outline"
-                        className={statusClass[doc.status] || ""}
+                        className={getStatusBadgeClass(doc.status)}
                       >
                         {doc.status}
                       </Badge>
                       <Badge variant="secondary">{doc.sourceName}</Badge>
                     </div>
                   </div>
-                  <p className="mt-0.5 truncate text-sm text-zinc-500 dark:text-zinc-400">
+                  <p className="mt-1 truncate font-mono text-xs text-muted-foreground">
                     {doc.position} — {doc.companyLocation}
                   </p>
                 </Link>

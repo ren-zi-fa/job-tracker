@@ -83,11 +83,11 @@ export function EditStatusDialog({ listing, onSave }: EditStatusDialogProps) {
       <DialogTrigger
         render={
           <Button
-            variant="ghost"
+            variant="outline"
             size="icon-sm"
             aria-label={`Ubah status lamaran ${listing.company}`}
           >
-            <PencilSimple className="size-4" />
+            <PencilSimple weight="bold" />
           </Button>
         }
       />

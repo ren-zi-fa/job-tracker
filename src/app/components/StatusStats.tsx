@@ -19,6 +19,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
+import { statusChartColor, statusChartFallbackColors } from "@/lib/status";
 import { fetcher, statsKey } from "@/lib/swr";
 
 interface StatusCount {
@@ -31,23 +32,12 @@ interface StatsResponse {
   total: number;
 }
 
-const statusColors: Record<string, string> = {
-  Pending: "#eab308",
-  Applied: "#3b82f6",
-  Interview: "#8b5cf6",
-  Rejected: "#ef4444",
-  Accepted: "#22c55e",
-};
-
-const fallbackColors = ["#f97316", "#14b8a6", "#ec4899", "#6366f1"];
-
 function slugify(status: string) {
   return status.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
 
 export function StatusStats() {
-  const { data, isLoading, error } =
-    useSWR<StatsResponse>(statsKey, fetcher);
+  const { data, isLoading, error } = useSWR<StatsResponse>(statsKey, fetcher);
 
   const { chartData, chartConfig, total } = useMemo(() => {
     const rows = data?.byStatus ?? [];
@@ -57,10 +47,14 @@ export function StatusStats() {
       config[key] = {
         label: row.status,
         color:
-          statusColors[row.status] ??
-          fallbackColors[i % fallbackColors.length],
+          statusChartColor[row.status] ??
+          statusChartFallbackColors[i % statusChartFallbackColors.length],
       };
-      return { status: row.status, count: row.count, fill: `var(--color-${key})` };
+      return {
+        status: row.status,
+        count: row.count,
+        fill: `var(--color-${key})`,
+      };
     });
     return { chartData, chartConfig: config, total: data?.total ?? 0 };
   }, [data]);
@@ -80,11 +74,11 @@ export function StatusStats() {
             <Skeleton className="h-4 w-2/3" />
           </div>
         ) : error ? (
-          <p className="py-6 text-center text-sm text-destructive">
+          <p className="border-2 border-destructive bg-destructive/10 py-6 text-center text-sm font-bold text-destructive">
             Gagal memuat statistik lamaran.
           </p>
         ) : total === 0 ? (
-          <p className="py-6 text-center text-sm text-zinc-400">
+          <p className="py-6 text-center text-sm text-muted-foreground">
             Belum ada lamaran untuk ditampilkan.
           </p>
         ) : (
@@ -109,7 +103,7 @@ export function StatusStats() {
                 />
               </PieChart>
             </ChartContainer>
-            <p className="mt-2 text-center text-sm text-zinc-500 dark:text-zinc-400">
+            <p className="mt-3 border-t-2 border-border pt-3 text-center font-mono text-xs tracking-wide text-muted-foreground uppercase">
               Total {total} lamaran
             </p>
           </>
