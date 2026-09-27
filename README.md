@@ -1,6 +1,18 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Tracker
 
-## Getting Started
+A Next.js application for tracking job applications across multiple sources. Monitor your job search progress, filter by status, and visualize application statistics.
+
+## 📋 Features
+
+- **Multi-source tracking**: Add and track job applications from different sources (LinkedIn, Jobstreet, Glints, Direct Company)
+- **Status management**: Track application status (Pending, Applied, Interview, Rejected, Accepted) with color-coded badges
+- **Infinite pagination**: Browse job listings with automatic loading more results
+- **Global search**: Search across all job listings by company, position, location, or status
+- **Statistics dashboard**: Visual pie chart showing application distribution by status
+- **Status editing**: Update application status inline with validation and toast notifications
+- **Responsive design**: Works on mobile and desktop with brutalist UI styling
+
+## 🚀 Getting Started
 
 First, run the development server:
 
@@ -16,21 +28,77 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Next.js 14** - App Router with Server Components and Client Components
+- **React** - With SWR for data fetching
+- **Tailwind CSS** - With brutalist design utilities (shadow-brutal, border-brutal)
+- **Drizzle ORM** - Type-safe SQL queries for PostgreSQL
+- **FlexSearch** - Full-text search indexing
+- **Recharts** - Statistics chart visualization
+- **Phosphor Icons** - Icon set
 
-## Learn More
+## 📁 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/                # API routes (sources, listings, search, stats)
+│   ├── detail/[id]/        # Detail page per source
+│   ├── components/         # Page-level components (AddSourceDialog, GlobalSearchDialog, StatusStats)
+│   ├── globals.css         # Global styles with custom theme variables
+│   └── layout.tsx          # Root layout with Toaster
+├── components/             # UI components (badge, button, card, dialog, input, label, select, skeleton, textarea, toast)
+├── lib/                    # Utility modules
+│   ├── status.ts           # Status badge classes and chart colors
+│   ├── swr.ts              # SWR query keys and fetcher
+│   ├── utils.ts            # cn utility helper
+│   └── validation.ts       # Zod schemas for input validation
+└── database/               # Drizzle ORM models and connection
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🌐 API Endpoints
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/sources` | GET | List all job sources |
+| `/api/sources` | POST | Add a new job source |
+| `/api/sources/:id/listings/count` | GET | Get total listings count for a source |
+| `/api/sources/:id/listings?page=&limit=` | GET | Paginated job listings for a source |
+| `/api/search` | GET | Global search across all listings |
+| `/api/stats` | GET | Statistics by status |
 
-## Deploy on Vercel
+## 🏷️ Status Values
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Supported application statuses:
+- `Pending` - Primary (yellow)
+- `Applied` - Secondary (purple)
+- `Interview` - Warning (amber)
+- `Rejected` - Destructive (red)
+- `Accepted` - Success (green)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Each status has corresponding badge classes and chart colors defined in `src/lib/status.ts`.
+
+## 🎨 UI Features
+
+The project features a custom brutalist design with:
+
+- Shadow-based depth (shadow-brutal-sm, shadow-brutal, shadow-brutal-lg)
+- Custom theme colors in `src/app/globals.css`
+- Rounded corners with varying radii
+- Interactive hover states with translate animations
+- Toast notifications for user feedback
+- Dialog modals for add/edit operations
+
+## 📦 Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run linting
+
+## 🛢️ Database
+
+Uses Drizzle ORM with PostgreSQL. Key tables:
+- `sourceTable` - Job sources (LinkedIn, Jobstreet, etc.)
+- `jobListingsTable` - Individual job applications with company, position, location, status, and application date
