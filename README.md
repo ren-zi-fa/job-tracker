@@ -2,6 +2,13 @@
 
 A Next.js application for tracking job applications across multiple sources. Monitor your job search progress, filter by status, and visualize application statistics.
 
+## 📸 Preview
+
+![Job Tracker Screenshot](./image/home.png)
+![Job Tracker Screenshot](./image/list-job.png)
+![Job Tracker Screenshot](./image/searching.png)
+![Job Tracker Screenshot](./image/statistik.png)
+
 ## 📋 Features
 
 - **Multi-source tracking**: Add and track job applications from different sources (LinkedIn, Jobstreet, Glints, Direct Company)
