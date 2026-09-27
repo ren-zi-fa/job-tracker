@@ -1,8 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  Briefcase,
+  Building,
+  LinkedinLogo,
+  MagnifyingGlass,
+} from "@phosphor-icons/react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import useSWR from "swr";
+import { AddSourceDialog } from "@/app/components/AddSourceDialog";
 import {
   Card,
   CardContent,
@@ -11,13 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AddSourceDialog } from "@/app/components/AddSourceDialog";
-import {
-  Building,
-  LinkedinLogo,
-  MagnifyingGlass,
-  Briefcase,
-} from "@phosphor-icons/react";
+import { fetcher, sourcesKey } from "@/lib/swr";
 
 interface Source {
   id: number;
@@ -34,18 +34,11 @@ const iconMap: Record<string, React.ElementType> = {
 const skeletons = [0, 1, 2, 3];
 
 export default function Home() {
-  const [sources, setSources] = useState<Source[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetch("/api/sources")
-      .then((res) => res.json())
-      .then((data) => {
-        setSources(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const {
+    data: sources = [],
+    isLoading,
+    error,
+  } = useSWR<Source[]>(sourcesKey, fetcher);
 
   return (
     <main className="min-h-screen bg-zinc-50 px-4 py-8 dark:bg-black">
@@ -59,11 +52,15 @@ export default function Home() {
           </p>
         </header>
 
-        {loading ? (
+        {isLoading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {skeletons.map((i) => (
               <Skeleton key={`skel-${i}`} className="h-32" />
             ))}
+          </div>
+        ) : error ? (
+          <div className="rounded-none border border-dashed border-destructive/50 p-8 text-center text-sm text-destructive">
+            Gagal memuat data sumber lamaran.
           </div>
         ) : (
           <>
@@ -80,7 +77,9 @@ export default function Home() {
                       <CardHeader className="flex flex-row items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Icon className="size-5 text-zinc-400" />
-                          <CardTitle className="text-sm">{source.sourceName}</CardTitle>
+                          <CardTitle className="text-sm">
+                            {source.sourceName}
+                          </CardTitle>
                         </div>
                       </CardHeader>
                       <CardContent>

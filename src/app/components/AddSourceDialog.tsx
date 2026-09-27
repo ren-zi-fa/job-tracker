@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { mutate } from "swr";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,17 +12,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Plus } from "@phosphor-icons/react";
-import { useRouter } from "next/navigation";
+import { sourcesKey } from "@/lib/swr";
+
+interface Source {
+  id: number;
+  sourceName: string;
+}
 
 export function AddSourceDialog() {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
 
   const handleSubmit = async () => {
     if (!name.trim()) return;
@@ -32,9 +36,14 @@ export function AddSourceDialog() {
         body: JSON.stringify({ sourceName: name.trim() }),
       });
       if (res.ok) {
+        const created: Source = await res.json();
         setName("");
         setOpen(false);
-        router.refresh();
+        await mutate(
+          sourcesKey,
+          (current: Source[] | undefined) => [...(current ?? []), created],
+          { revalidate: true },
+        );
       }
     } catch (err) {
       console.error("Failed to add source:", err);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -10,20 +11,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem, SelectGroup } from "@/components/ui/select";
-import { Plus } from "@phosphor-icons/react";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const statusOptions = ["Applied", "Interview", "Rejected", "Accepted"];
 
 interface AddListingDialogProps {
   sourceId: number;
   sourceName: string;
+  onCreated?: () => unknown;
 }
 
-export function AddListingDialog({ sourceId, sourceName }: AddListingDialogProps) {
+export function AddListingDialog({
+  sourceId,
+  sourceName,
+  onCreated,
+}: AddListingDialogProps) {
   const [open, setOpen] = useState(false);
   const [company, setCompany] = useState("");
   const [position, setPosition] = useState("");
@@ -53,6 +64,7 @@ export function AddListingDialog({ sourceId, sourceName }: AddListingDialogProps
         setLocation("");
         setStatus("Applied");
         setOpen(false);
+        await onCreated?.();
       }
     } catch (err) {
       console.error("Failed to add listing:", err);
@@ -110,7 +122,10 @@ export function AddListingDialog({ sourceId, sourceName }: AddListingDialogProps
           </div>
           <div className="grid gap-2">
             <Label htmlFor="listing-status">Status</Label>
-            <Select value={status} onValueChange={(v) => setStatus(v || "Applied")}>
+            <Select
+              value={status}
+              onValueChange={(v) => setStatus(v || "Applied")}
+            >
               <SelectTrigger id="listing-status">
                 <SelectValue />
               </SelectTrigger>
@@ -130,7 +145,12 @@ export function AddListingDialog({ sourceId, sourceName }: AddListingDialogProps
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !company.trim() || !position.trim() || !location.trim()}>
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              loading || !company.trim() || !position.trim() || !location.trim()
+            }
+          >
             {loading ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>

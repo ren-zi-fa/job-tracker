@@ -1,11 +1,11 @@
+import { desc, eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import db from "@/database/db";
 import { jobListingsTable } from "@/database/models/schema";
-import { eq } from "drizzle-orm";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
   const { searchParams } = new URL(req.url);
@@ -17,7 +17,7 @@ export async function GET(
     .select()
     .from(jobListingsTable)
     .where(eq(jobListingsTable.sourceId, parseInt(id)))
-    .orderBy(jobListingsTable.applicationDate)
+    .orderBy(desc(jobListingsTable.applicationDate), desc(jobListingsTable.id))
     .limit(limit + 1)
     .offset(offset);
 
