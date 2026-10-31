@@ -16,8 +16,6 @@ pipeline {
     NEXT_TELEMETRY_DISABLED = '1'
     NPM_CONFIG_AUDIT = 'false'
     NPM_CONFIG_FUND = 'false'
-    
-    DATABASE_URL = credentials('neon-database-url')
   }
 
   stages {
@@ -41,14 +39,16 @@ pipeline {
 
     stage('Build') {
       steps {
-        sh 'npm run build'
+        withCredentials([string(credentialsId: 'neon-database-url', variable: 'DATABASE_URL')]) {
+          sh 'npm run build'
+        }
       }
     }
   }
 
   post {
     success {
-      echo 'Pipeline berhasil: format, test, dan build selesai.'
+      echo 'Pipeline berhasil: format dan build selesai.'
       archiveArtifacts artifacts: '.next/BUILD_ID', allowEmptyArchive: true
     }
     failure {
