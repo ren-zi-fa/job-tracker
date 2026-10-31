@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetcher, sourcesKey } from "@/lib/swr";
+import { Button } from "@/components/ui/button";
 
 interface Source {
   id: number;
@@ -61,7 +62,14 @@ export default function Home() {
               </p>
             </div>
           </div>
-          {!isLoading && !error && <GlobalSearchDialog />}
+          {!isLoading && !error && (
+            <div className="flex justify-center gap-2">
+              <Link href="/lowongan">
+                <Button>Cari Lowongan</Button>
+              </Link>
+              <GlobalSearchDialog />
+            </div>
+          )}
         </header>
 
         {isLoading ? (

@@ -1,0 +1,30 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - link "Kembali ke Beranda" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e11]:
+        - heading "Lowongan Kerja" [level=1] [ref=e12]
+        - paragraph [ref=e13]: IT · Admin · Operasional · Perbankan
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: Wilayah
+          - combobox [ref=e18]:
+            - generic [ref=e19]: sumatera-barat
+            - img [aria-hidden]: ▼
+          - textbox [aria-hidden] [ref=e20]: sumatera-barat
+        - button "Refresh" [ref=e21]
+      - generic [ref=e46]:
+        - generic [ref=e47]: "Jobstreet: gagal"
+        - generic [ref=e48]: "Indeed: gagal"
+        - generic [ref=e49]: "Glints: gagal"
+      - heading "Hasil (0 lowongan)" [level=2] [ref=e23]:
+        - text: Hasil
+        - generic [ref=e24]: (0 lowongan)
+      - generic [ref=e25]:
+        - paragraph [ref=e43]: Belum ada lowongan
+        - paragraph [ref=e44]: Pilih wilayah, lalu tekan Refresh untuk mengambil lowongan IT, Admin, Operasional, dan Perbankan dari Jobstreet, Indeed, dan Glints.
+  - button "Open Next.js Dev Tools" [ref=e37] [cursor=pointer]
+  - alert [ref=e45]
+  - generic:
+    - region "Notifications"

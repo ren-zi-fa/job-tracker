@@ -17,3 +17,16 @@ export const listingsCountKey = (sourceId: number) =>
 export const searchKey = "/api/search";
 
 export const statsKey = "/api/stats";
+
+export const lowonganKey = (params: {
+  wilayah: string;
+  page: number;
+  limit?: number;
+}) => {
+  const qs = new URLSearchParams({
+    wilayah: params.wilayah,
+    page: String(params.page),
+    limit: String(params.limit ?? 12),
+  });
+  return `/api/lowongan?${qs.toString()}`;
+};
