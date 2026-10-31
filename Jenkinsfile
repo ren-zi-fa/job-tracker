@@ -16,6 +16,8 @@ pipeline {
     NEXT_TELEMETRY_DISABLED = '1'
     NPM_CONFIG_AUDIT = 'false'
     NPM_CONFIG_FUND = 'false'
+    
+    DATABASE_URL = credentials('neon-database-url')
   }
 
   stages {
