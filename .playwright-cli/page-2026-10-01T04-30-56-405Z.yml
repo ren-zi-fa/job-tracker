@@ -1,0 +1,9 @@
+- article [ref=f14e2]:
+  - heading [level=1]
+  - generic [ref=f14e4]:
+    - paragraph [ref=f14e5]: Apologies! Your access is currently restricted due to automated traffic coming from your IP address. Please solve the captcha to confirm you are human.
+    - paragraph
+    - main:
+      - generic:
+        - heading [level=2]
+        - paragraph

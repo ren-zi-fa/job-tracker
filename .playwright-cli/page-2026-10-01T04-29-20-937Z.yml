@@ -1,0 +1,20 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - link "Kembali ke Beranda" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e11]:
+        - heading "Lowongan Kerja" [level=1] [ref=e12]
+        - paragraph [ref=e13]: IT · Admin · Operasional · Perbankan
+      - generic [ref=e15]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: Wilayah
+          - combobox [ref=e18]:
+            - generic [ref=e19]: sumatera-barat
+            - img [aria-hidden]: ▼
+          - textbox [aria-hidden] [ref=e20]: sumatera-barat
+        - button "Refresh" [ref=e21]
+      - heading "Hasil (0 lowongan)" [level=2] [ref=e23]:
+        - text: Hasil
+        - generic [ref=e24]: (0 lowongan)
+  - button "Open Next.js Dev Tools" [ref=e37] [cursor=pointer]

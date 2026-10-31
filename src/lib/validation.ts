@@ -38,3 +38,23 @@ export const updateListingStatusSchema = z.object({
 export type UpdateListingStatusInput = z.infer<
   typeof updateListingStatusSchema
 >;
+
+// ---- Lowongan (scraping) ----
+export const wilayahEnum = z.enum([
+  "sumatera-barat",
+  "sumatera-utara",
+  "pekanbaru-riau",
+  "batam",
+]);
+export type Wilayah = z.infer<typeof wilayahEnum>;
+
+export const lowonganQuerySchema = z.object({
+  wilayah: wilayahEnum.optional().default("sumatera-barat"),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(50).default(12),
+});
+
+export const lowonganRefreshSchema = z.object({
+  wilayah: wilayahEnum,
+});
+export type LowonganRefreshInput = z.infer<typeof lowonganRefreshSchema>;
